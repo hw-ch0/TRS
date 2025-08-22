@@ -9,8 +9,8 @@ __all__ = ['QConv']
 class STE_round(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x_in):
-        x_out = torch.round(x_in)
-        return x_out
+
+        return torch.round(x_in)
     @staticmethod
     def backward(ctx, g):
         return g
