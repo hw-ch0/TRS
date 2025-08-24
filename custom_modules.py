@@ -92,9 +92,6 @@ class QConv(nn.Conv2d):
     def forward(self, x):
         if self.training and self.init.item() == 1:
            self.initialize(x)
-
-        if self.training:
-            self.prev_weight = self.weight.detach().clone()
         
         Qweight = self.weight_quantization(self.weight)
         if self.training and self.bit_weight != 32:
