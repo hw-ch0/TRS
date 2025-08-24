@@ -31,11 +31,7 @@ class QConv(nn.Conv2d):
         self.Qn_a = 0
         self.Qp_a = 2**(self.bit_act) - 1
         
-        if args.baseline:
-            self.sW = nn.Parameter(data = torch.tensor(1).float())
-        else:
-            self.register_buffer('sW', torch.tensor(1).float()) # fix sW when our optimizer is used
-        self.sA = nn.Parameter(data = torch.tensor(1).float())
+       
 
         self.register_buffer('init', torch.tensor([1]))
         self.register_buffer('prev_weight', torch.zeros_like(self.weight))
