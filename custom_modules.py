@@ -69,17 +69,22 @@ class QConv(nn.Conv2d):
     def act_quantization(self, x):
         if self.bit_act == 32:
             return x
-        elif self.bit_act == 1:  # <-- 여기 수정
+        elif self.bit_act == 1:
             x = x / (torch.abs(self.sA)+1e-6)
-            x = x.clamp(0, 1) # [0, 1]
-            x = self.STE_round(x) # {0, 1}
+            x = x.clamp(0, 1)
+            x = self.STE_round(x)
             return x
         else:
-            x = x / (torch.abs(self.sA)+1e-6) # normalized such that 99% of activations lie in [0, 1]
-            x = x * 2**self.bit_act
-            x = x.clamp(self.Qn_a, self.Qp_a) # [0, 2^b-1]
-            x = self.STE_round(x) # {0, ..., 2^b-1}
-            x = x / 2**self.bit_act # fixed point representation
+            x = x / (torch.abs(self.sA)+1e-6)
+
+            # 기존: x * 2**bit_act → 클리핑이 더 빨리 발생
+            # 개선: weight와 동일하게 2^(bit-1) 스케일 적용
+            scale = 2**(self.bit_act - 1)
+
+            x = x * scale
+            x = x.clamp(self.Qn_a, self.Qp_a)
+            x = self.STE_round(x)
+            x = x / scale
             return x
 
     def initialize(self, x):
