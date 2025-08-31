@@ -74,18 +74,7 @@ class QConv(nn.Conv2d):
             x = x.clamp(0, 1)
             x = self.STE_round(x)
             return x
-        else:
-            x = x / (torch.abs(self.sA)+1e-6)
-
-            # 기존: x * 2**bit_act → 클리핑이 더 빨리 발생
-            # 개선: weight와 동일하게 2^(bit-1) 스케일 적용
-            scale = 2**(self.bit_act - 1)
-
-            x = x * scale
-            x = x.clamp(self.Qn_a, self.Qp_a)
-            x = self.STE_round(x)
-            x = x / scale
-            return x
+      
 
     def initialize(self, x):
         self.sW.data.fill_(self.weight.std()*3.0)
