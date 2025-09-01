@@ -84,10 +84,10 @@ class QConv(nn.Conv2d):
 
     def initialize(self, x):
         with torch.no_grad():
-        self.sW.fill_(self.weight.std() * 3.0)
-        self.sA.fill_(x.std() / math.sqrt(1 - 2/math.pi) * 3.0)
-        self.prev_weight = self.weight.detach().clone()
-        self.init.fill_(0)
+            self.sW.fill_(self.weight.std() * 3.0)
+            self.sA.fill_(x.std() / math.sqrt(1 - 2/math.pi) * 3.0)
+            self.prev_weight = self.weight.detach().clone()
+            self.init.fill_(0)
 
         
     def forward(self, x):
