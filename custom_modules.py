@@ -83,8 +83,9 @@ class QConv(nn.Conv2d):
             return x
 
     def initialize(self, x):
-        self.sW.data.fill_(self.weight.std()*3.0)
-        self.sA.data.fill_(x.std() / math.sqrt(1 - 2/math.pi) * 3.0)
+        with torch.no_grad():
+        self.sW.fill_(self.weight.std() * 3.0)
+        self.sA.fill_(x.std() / math.sqrt(1 - 2/math.pi) * 3.0)
         self.prev_weight = self.weight.detach().clone()
         self.init.fill_(0)
 
