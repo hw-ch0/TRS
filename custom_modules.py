@@ -74,13 +74,13 @@ class QConv(nn.Conv2d):
             x = x.clamp(0, 1) # [0, 1]
             x = self.STE_round(x) # {0, 1}
             return x
-        # else:
-        #     x = x / (torch.abs(self.sA)+1e-6) # normalized such that 99% of activations lie in [0, 1]
-        #     x = x * 2**self.bit_act
-        #     x = x.clamp(self.Qn_a, self.Qp_a) # [0, 2^b-1]
-        #     x = self.STE_round(x) # {0, ..., 2^b-1}
-        #     x = x / 2**self.bit_act # fixed point representation
-        #     return x
+        else:
+            x = x / (torch.abs(self.sA)+1e-6) # normalized such that 99% of activations lie in [0, 1]
+            x = x * 2**self.bit_act
+            x = x.clamp(self.Qn_a, self.Qp_a) # [0, 2^b-1]
+            x = self.STE_round(x) # {0, ..., 2^b-1}
+            x = x / 2**self.bit_act # fixed point representation
+            return x
 
     def initialize(self, x):
         with torch.no_grad():
@@ -95,7 +95,10 @@ class QConv(nn.Conv2d):
            self.initialize(x)
         
         Qweight = self.weight_quantization(self.weight)
-       
+        if self.training and self.bit_weight != 32:
+            transition = (Qweight != self.prev_Qweight).float()
+            setattr(self.weight, "transition", transition)
+            self.prev_Qweight = Qweight.detach().clone()
         Qact = self.act_quantization(x)
         output = F.conv2d(Qact, Qweight, self.bias,  self.stride, self.padding, self.dilation, self.groups)
 
