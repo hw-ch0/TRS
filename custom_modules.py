@@ -83,28 +83,13 @@ class QConv(nn.Conv2d):
             return x
 
     def initialize(self, x):
-        with torch.no_grad():
-            self.sW.fill_(self.weight.std() * 3.0)
-            self.sA.fill_(x.std() / math.sqrt(1 - 2/math.pi) * 3.0)
-            self.prev_weight = self.weight.detach().clone()
-            self.init.fill_(0)
+        self.sW.data.fill_(self.weight.std()*3.0)
+        self.sA.data.fill_(x.std() / math.sqrt(1 - 2/math.pi) * 3.0)
+        self.prev_weight = self.weight.detach().clone()
+        self.init.fill_(0)
 
         
     def forward(self, x):
-        if self.training and self.init.item() == 1:
-           self.initialize(x)
-        
-        Qweight = self.weight_quantization(self.weight)
-        if self.training and self.bit_weight != 32:
-            transition = (Qweight != self.prev_Qweight).float()
-            setattr(self.weight, "transition", transition)
-            self.prev_Qweight = Qweight.detach().clone()
-        Qact = self.act_quantization(x)
-        output = F.conv2d(Qact, Qweight, self.bias,  self.stride, self.padding, self.dilation, self.groups)
-
-        return output
-    
-    def forward_c(self, x):
         if self.training and self.init.item() == 1:
            self.initialize(x)
         
