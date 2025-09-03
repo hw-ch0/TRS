@@ -62,7 +62,7 @@ class QConv(nn.Conv2d):
             weight_q = self.STE_round(weight) # {-2^(b-1), ..., 2^(b-1)-1}
             if self.training:
                 D2TP = 0.5 - (weight-weight_q).abs()
-                self.MD2TP = D2TP.mean().detach().clone()
+                # self.MD2TP = D2TP.mean().detach().clone()
             weight_q = weight_q / 2**(self.bit_weight-1) # fixed point representation
             return weight_q
 
@@ -81,6 +81,7 @@ class QConv(nn.Conv2d):
             x = self.STE_round(x) # {0, ..., 2^b-1}
             x = x / 2**self.bit_act # fixed point representation
             return x
+
 
     def initialize(self, x):
         self.sW.data.fill_(self.weight.std()*3.0)
