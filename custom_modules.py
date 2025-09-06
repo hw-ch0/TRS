@@ -98,7 +98,7 @@ class QConv(nn.Conv2d):
         if self.training and self.bit_weight != 32:
             transition = (Qweight != self.prev_Qweight).float()
             setattr(self.weight, "transition", transition)
-            self.prev_Qweight = Qweight.detach().clone()
+            self.prev_Qweight.copy_(Qweight.detach())
         Qact = self.act_quantization(x)
         output = F.conv2d(Qact, Qweight, self.bias,  self.stride, self.padding, self.dilation, self.groups)
 
