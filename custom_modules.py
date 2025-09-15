@@ -47,23 +47,23 @@ class QConv(nn.Conv2d):
             return weight
         elif self.bit_weight == 1:
             weight = weight / (torch.abs(self.sW)+1e-6)
-            weight = weight.clamp(-1, 1)
-            weight = (weight + 1)/2
-            weight_q = self.STE_round(weight)
+            weight = weight.clamp(-1, 1) # [-1, 1]
+            weight = (weight + 1)/2 # [0, 1]
+            weight_q = self.STE_round(weight) # {0, 1}
             if self.training:
-                D2TP = 1 - (weight - weight_q).abs()
-                self.MD2TP.copy_(D2TP.mean().detach())  
-            weight_q = weight_q * 2 - 1
+                D2TP = 1 - (weight-weight_q).abs()
+                self.MD2TP = D2TP.mean().detach().clone()
+            weight_q = weight_q * 2 - 1 # {-1, 1}
             return weight_q
         else:
-            weight = weight / (torch.abs(self.sW)+1e-6)
+            weight = weight / (torch.abs(self.sW)+1e-6) # normalized such that 99% of weights lie in [-1, 1]
             weight = weight * 2**(self.bit_weight-1)
             weight = weight.clamp(self.Qn_w, self.Qp_w)
-            weight_q = self.STE_round(weight)
+            weight_q = self.STE_round(weight) # {-2^(b-1), ..., 2^(b-1)-1}
             if self.training:
-                D2TP = 0.5 - (weight - weight_q).abs()
-                self.MD2TP.copy_(D2TP.mean().detach())  
-            weight_q = weight_q / 2**(self.bit_weight-1)
+                D2TP = 0.5 - (weight-weight_q).abs()
+                self.MD2TP = D2TP.mean().detach().clone()
+            weight_q = weight_q / 2**(self.bit_weight-1) # fixed point representation
             return weight_q
 
 
