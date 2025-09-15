@@ -52,7 +52,7 @@ class QConv(nn.Conv2d):
             weight_q = self.STE_round(weight)
             if self.training:
                 D2TP = 1 - (weight - weight_q).abs()
-                self.MD2TP.copy_(D2TP.mean().detach())  # <-- 여기만 변경
+                self.MD2TP.copy_(D2TP.mean().detach())  
             weight_q = weight_q * 2 - 1
             return weight_q
         else:
@@ -62,7 +62,7 @@ class QConv(nn.Conv2d):
             weight_q = self.STE_round(weight)
             if self.training:
                 D2TP = 0.5 - (weight - weight_q).abs()
-                self.MD2TP.copy_(D2TP.mean().detach())  # <-- 여기도 동일하게
+                self.MD2TP.copy_(D2TP.mean().detach())  
             weight_q = weight_q / 2**(self.bit_weight-1)
             return weight_q
 
