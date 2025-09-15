@@ -76,11 +76,11 @@ class QConv(nn.Conv2d):
             x = self.STE_round(x) # {0, 1}
             return x
         else:
-            x = x / (torch.abs(self.sA)+1e-6) # normalized such that 99% of activations lie in [0, 1]
+            x = x / (torch.abs(self.sA)+1e-6) 
             x = x * 2**self.bit_act
-            x = x.clamp(self.Qn_a, self.Qp_a) # [0, 2^b-1]
-            x = self.STE_round(x) # {0, ..., 2^b-1}
-            x = x / 2**self.bit_act # fixed point representation
+            x = x.clamp(self.Qn_a, self.Qp_a) 
+            x = self.STE_round(x) 
+            x = x / 2**self.bit_act
             return x
 
 
