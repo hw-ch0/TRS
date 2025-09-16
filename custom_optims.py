@@ -224,7 +224,7 @@ def adam(params: List[Tensor],
                     lr_scale.mul_(momentum_tr).add_(update, alpha=1-momentum_tr)
                     lr_new = alpha * lr_scale
         
-        step_size = lr_new / bias_correction1
+        step_size = float(lr_new) / bias_correction1
 
         # for tracking
         d_p = exp_avg / denom / bias_correction1
