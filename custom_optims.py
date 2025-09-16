@@ -211,7 +211,7 @@ def adam(params: List[Tensor],
             denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
 
         if baseline:
-            lr_new = lr
+            lr_new = float(lr)
         else:
             if momentum_tr == 0 or not hasattr(param,'transition'):
                 lr_new = lr
@@ -224,7 +224,7 @@ def adam(params: List[Tensor],
                     lr_scale.mul_(momentum_tr).add_(update, alpha=1-momentum_tr)
                     lr_new = alpha * lr_scale
         
-        step_size = float(lr_new) / bias_correction1
+        step_size = lr_new / bias_correction1
 
         # for tracking
         d_p = exp_avg / denom / bias_correction1
