@@ -276,8 +276,8 @@ class quant_Adam(Optimizer):
             exp_avg_sqs = []
             max_exp_avg_sqs = []
             state_steps = []
-            lr_scales = [] # new
-            EMA_transitions = [] # new
+            lr_scales = [] 
+            EMA_transitions = [] 
             beta1, beta2 = group['betas']
 
             for p in group['params']:
@@ -299,7 +299,8 @@ class quant_Adam(Optimizer):
                             # Maintains max of all exp. moving avg. of sq. grad. values
                             state['max_exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
                         state['lr_scale'] = torch.ones_like(p.view(-1)[0], memory_format=torch.preserve_format)
-                        state['EMA_transition'] = torch.ones_like(p.view(-1)[0], memory_format=torch.preserve_format)*group['lr'] # avoid inf for initial steps
+                        # avoid inf for initial steps
+                        state['EMA_transition'] = torch.ones_like(p.view(-1)[0], memory_format=torch.preserve_format)*group['lr'] 
 
                     exp_avgs.append(state['exp_avg'])
                     exp_avg_sqs.append(state['exp_avg_sq'])
