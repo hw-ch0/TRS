@@ -20,7 +20,8 @@ def sgd(params: List[Tensor],
         nesterov: bool,
         momentum_tr: float,
         alpha: float,
-        baseline: bool):
+        baseline: bool,
+        flag: bool):
     r"""Functional API that performs SGD algorithm computation.
     See :class:`~torch.optim.SGD` for details.
     """
@@ -67,6 +68,13 @@ def sgd(params: List[Tensor],
         setattr(param, "d_p", d_p.clone())
 
         param.add_(d_p * (-lr_new))
+        
+        # TODO
+        if flag:
+            pass
+        else:
+            # 
+            pass
 
 class quant_SGD(Optimizer):
     def __init__(self, params, lr=required, momentum=0, dampening=0,
