@@ -69,12 +69,7 @@ def sgd(params: List[Tensor],
 
         param.add_(d_p * (-lr_new))
         
-        # TODO
-        if flag:
-            pass
-        else:
-            # 
-            pass
+   
 
 class quant_SGD(Optimizer):
     def __init__(self, params, lr=required, momentum=0, dampening=0,
