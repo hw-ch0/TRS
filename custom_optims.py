@@ -72,8 +72,18 @@ def sgd(params: List[Tensor],
    
 
 class quant_SGD(Optimizer):
-    def __init__(self, params, lr=required, momentum=0, dampening=0,
-                 weight_decay=0, nesterov=False, momentum_tr=0, alpha=0.1, baseline=True):
+    def __init__(
+        self, 
+        params, 
+        lr=required, 
+        momentum=0, 
+        dampening=0,
+        weight_decay=0, 
+        nesterov=False, 
+        momentum_tr=0, 
+        alpha=0.1, 
+        baseline=True
+        ):
         self.baseline = baseline
         if lr is not required and lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -243,8 +253,18 @@ def adam(params: List[Tensor],
 
 # https://github.com/pytorch/pytorch/blob/master/torch/optim/adam.py
 class quant_Adam(Optimizer):
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
-                 weight_decay=0, amsgrad=False, momentum_tr=0, alpha=1e-3, baseline=True):
+    def __init__(
+        self, 
+        params, 
+        lr=1e-3, 
+        betas=(0.9, 0.999), 
+        eps=1e-8,
+        weight_decay=0, 
+        amsgrad=False, 
+        momentum_tr=0, 
+        alpha=1e-3, 
+        baseline=True
+        ):
         self.baseline=baseline
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
