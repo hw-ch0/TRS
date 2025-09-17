@@ -110,15 +110,15 @@ class quant_SGD(Optimizer):
             params_with_grad = []
             d_p_list = []
             momentum_buffer_list = []
-            lr_scales = [] # new
-            EMA_transitions = [] # new
-            state_steps = []  # new
+            lr_scales = [] 
+            EMA_transitions = [] 
+            state_steps = []  
             weight_decay = group['weight_decay']
             momentum = group['momentum']
             dampening = group['dampening']
             nesterov = group['nesterov']
-            momentum_tr = group['momentum_tr'] # new
-            alpha = group['alpha'] # new
+            momentum_tr = group['momentum_tr'] 
+            alpha = group['alpha'] 
             lr = group['lr']
 
             for p in group['params']:
