@@ -247,7 +247,8 @@ def adam(params: List[Tensor],
 
         # for tracking
         d_p = exp_avg / denom / bias_correction1
-        setattr(param, "d_p", d_p.clone())
+        # setattr(param, "d_p", d_p.clone())
+        setattr(param, "d_p", d_p) # memory usage
 
         param.addcdiv_(exp_avg, denom, value=-step_size)
 
