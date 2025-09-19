@@ -27,7 +27,6 @@ def sgd(params: List[Tensor],
     """
 
     for i, param in enumerate(params):
-
         d_p = d_p_list[i]
         lr_scale = lr_scales[i] # new
         EMA_transition = EMA_transitions[i] # new
@@ -50,7 +49,6 @@ def sgd(params: List[Tensor],
             else:
                 d_p = buf
 
-
         if baseline:
             lr_new = lr
         else:
@@ -64,7 +62,6 @@ def sgd(params: List[Tensor],
                     update = lr_scale*lr/(EMA_transition+1e-8)
                     lr_scale.mul_(momentum_tr).add_(update, alpha=1-momentum_tr)
                     lr_new = alpha * lr_scale
-
         setattr(param, "d_p", d_p.clone())
 
         param.add_(d_p * (-lr_new))
@@ -228,7 +225,6 @@ def adam(params: List[Tensor],
             denom = (max_exp_avg_sqs[i].sqrt() / math.sqrt(bias_correction2)).add_(eps)
         else:
             denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
-
         if baseline:
             lr_new = float(lr)
         else:
@@ -247,8 +243,7 @@ def adam(params: List[Tensor],
 
         # for tracking
         d_p = exp_avg / denom / bias_correction1
-        # setattr(param, "d_p", d_p.clone())
-        setattr(param, "d_p", d_p) # memory usage
+        setattr(param, "d_p", d_p)
 
         param.addcdiv_(exp_avg, denom, value=-step_size)
 
