@@ -13,15 +13,15 @@ class LambdaLayer(nn.Module):
     def __init__(self, lambd):
         super(LambdaLayer, self).__init__()
         self.lambd = lambd
+
     def forward(self, x):
         return self.lambd(x)
 
 def _weights_init(m):
     classname = m.__class__.__name__
-    print(classname)
+    # print(classname)
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d) or isinstance(m, QConv):
         nn.init.kaiming_normal_(m.weight)
-
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -45,6 +45,7 @@ class BasicBlock(nn.Module):
                      nn.Conv2d(in_planes, self.expansion * planes, kernel_size=1, stride=stride, bias=False),
                      nn.BatchNorm2d(self.expansion * planes)
                 )
+
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
@@ -74,6 +75,7 @@ class QuantBlock(nn.Module):
                      QConv(in_planes, self.expansion * planes, kernel_size=1, stride=stride, bias=False, args=args),
                      nn.BatchNorm2d(self.expansion * planes)
                 )
+
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
@@ -114,8 +116,7 @@ class ResNet(nn.Module):
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
-        # out = F.avg_pool2d(out, out.size()[3])
-        out = F.adaptive_avg_pool2d(out, 1)
+        out = F.avg_pool2d(out, out.size()[3])
         out = out.view(out.size(0), -1)
         out = self.bn2(out)
         out = self.linear(out)
