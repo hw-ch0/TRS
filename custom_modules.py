@@ -56,33 +56,31 @@ class QConv(nn.Conv2d):
             weight_q = weight_q * 2 - 1 # {-1, 1}
             return weight_q
         else:
-            weight = weight / (torch.abs(self.sW)+1e-6) 
+            weight = weight / (torch.abs(self.sW)+1e-6) # normalized such that 99% of weights lie in [-1, 1]
             weight = weight * 2**(self.bit_weight-1)
             weight = weight.clamp(self.Qn_w, self.Qp_w)
-            weight_q = self.STE_round(weight) 
+            weight_q = self.STE_round(weight) # {-2^(b-1), ..., 2^(b-1)-1}
             if self.training:
                 D2TP = 0.5 - (weight-weight_q).abs()
                 self.MD2TP = D2TP.mean().detach().clone()
-            weight_q = weight_q / 2**(self.bit_weight-1) 
+            weight_q = weight_q / 2**(self.bit_weight-1) # fixed point representation
             return weight_q
-
 
     def act_quantization(self, x):
         if self.bit_act == 32:
             return x
-        elif self.bit_act == 1:  # <-- 여기 수정
+        elif self.bit_weight == 1:
             x = x / (torch.abs(self.sA)+1e-6)
             x = x.clamp(0, 1) # [0, 1]
             x = self.STE_round(x) # {0, 1}
             return x
         else:
-            x = x / (torch.abs(self.sA)+1e-6) 
+            x = x / (torch.abs(self.sA)+1e-6) # normalized such that 99% of activations lie in [0, 1]
             x = x * 2**self.bit_act
-            x = x.clamp(self.Qn_a, self.Qp_a) 
-            x = self.STE_round(x) 
-            x = x / 2**self.bit_act
+            x = x.clamp(self.Qn_a, self.Qp_a) # [0, 2^b-1]
+            x = self.STE_round(x) # {0, ..., 2^b-1}
+            x = x / 2**self.bit_act # fixed point representation
             return x
-
 
     def initialize(self, x):
         self.sW.data.fill_(self.weight.std()*3.0)
@@ -92,14 +90,17 @@ class QConv(nn.Conv2d):
 
         
     def forward(self, x):
-        if self.training and self.init.item() == 1:
-           self.initialize(x)
+        if self.training and self.init:
+            self.initialize(x)
+
+        if self.training:
+            self.prev_weight = self.weight.detach().clone()
         
         Qweight = self.weight_quantization(self.weight)
         if self.training and self.bit_weight != 32:
             transition = (Qweight != self.prev_Qweight).float()
             setattr(self.weight, "transition", transition)
-            self.prev_Qweight.copy_(Qweight.detach())
+            self.prev_Qweight = Qweight.detach().clone()
         Qact = self.act_quantization(x)
         output = F.conv2d(Qact, Qweight, self.bias,  self.stride, self.padding, self.dilation, self.groups)
 
