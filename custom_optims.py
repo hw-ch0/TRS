@@ -20,13 +20,13 @@ def sgd(params: List[Tensor],
         nesterov: bool,
         momentum_tr: float,
         alpha: float,
-        baseline: bool,
-        flag: bool):
+        baseline: bool):
     r"""Functional API that performs SGD algorithm computation.
     See :class:`~torch.optim.SGD` for details.
     """
 
     for i, param in enumerate(params):
+
         d_p = d_p_list[i]
         lr_scale = lr_scales[i] # new
         EMA_transition = EMA_transitions[i] # new
@@ -49,6 +49,7 @@ def sgd(params: List[Tensor],
             else:
                 d_p = buf
 
+
         if baseline:
             lr_new = lr
         else:
@@ -62,25 +63,14 @@ def sgd(params: List[Tensor],
                     update = lr_scale*lr/(EMA_transition+1e-8)
                     lr_scale.mul_(momentum_tr).add_(update, alpha=1-momentum_tr)
                     lr_new = alpha * lr_scale
+
         setattr(param, "d_p", d_p.clone())
 
         param.add_(d_p * (-lr_new))
-        
-   
 
 class quant_SGD(Optimizer):
-    def __init__(
-        self, 
-        params, 
-        lr=required, 
-        momentum=0, 
-        dampening=0,
-        weight_decay=0, 
-        nesterov=False, 
-        momentum_tr=0, 
-        alpha=0.1, 
-        baseline=True
-        ):
+    def __init__(self, params, lr=required, momentum=0, dampening=0,
+                 weight_decay=0, nesterov=False, momentum_tr=0, alpha=0.1, baseline=True):
         self.baseline = baseline
         if lr is not required and lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -117,25 +107,19 @@ class quant_SGD(Optimizer):
             params_with_grad = []
             d_p_list = []
             momentum_buffer_list = []
-            lr_scales = [] 
-            EMA_transitions = [] 
-            state_steps = []  
+            lr_scales = [] # new
+            EMA_transitions = [] # new
+            state_steps = []  # new
             weight_decay = group['weight_decay']
             momentum = group['momentum']
             dampening = group['dampening']
             nesterov = group['nesterov']
-            momentum_tr = group['momentum_tr'] 
-            alpha = group['alpha'] 
+            momentum_tr = group['momentum_tr'] # new
+            alpha = group['alpha'] # new
             lr = group['lr']
 
             for p in group['params']:
                 if p.grad is not None:
-                    if p.grad.is_sparse:
-                        raise RuntimeError(
-                        'quant_SGD does not support sparse gradients, '
-                        'please use a dense gradient or a sparse-aware optimizer.'
-                    )
-
                     params_with_grad.append(p)
                     d_p_list.append(p.grad)
 
@@ -225,8 +209,9 @@ def adam(params: List[Tensor],
             denom = (max_exp_avg_sqs[i].sqrt() / math.sqrt(bias_correction2)).add_(eps)
         else:
             denom = (exp_avg_sq.sqrt() / math.sqrt(bias_correction2)).add_(eps)
+
         if baseline:
-            lr_new = float(lr)
+            lr_new = lr
         else:
             if momentum_tr == 0 or not hasattr(param,'transition'):
                 lr_new = lr
@@ -243,24 +228,14 @@ def adam(params: List[Tensor],
 
         # for tracking
         d_p = exp_avg / denom / bias_correction1
-        setattr(param, "d_p", d_p)
+        setattr(param, "d_p", d_p.clone())
 
         param.addcdiv_(exp_avg, denom, value=-step_size)
 
 # https://github.com/pytorch/pytorch/blob/master/torch/optim/adam.py
 class quant_Adam(Optimizer):
-    def __init__(
-        self, 
-        params, 
-        lr=1e-3, 
-        betas=(0.9, 0.999), 
-        eps=1e-8,
-        weight_decay=0, 
-        amsgrad=False, 
-        momentum_tr=0, 
-        alpha=1e-3, 
-        baseline=True
-        ):
+    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
+                 weight_decay=0, amsgrad=False, momentum_tr=0, alpha=1e-3, baseline=True):
         self.baseline=baseline
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -301,8 +276,8 @@ class quant_Adam(Optimizer):
             exp_avg_sqs = []
             max_exp_avg_sqs = []
             state_steps = []
-            lr_scales = [] 
-            EMA_transitions = [] 
+            lr_scales = [] # new
+            EMA_transitions = [] # new
             beta1, beta2 = group['betas']
 
             for p in group['params']:
@@ -324,8 +299,7 @@ class quant_Adam(Optimizer):
                             # Maintains max of all exp. moving avg. of sq. grad. values
                             state['max_exp_avg_sq'] = torch.zeros_like(p, memory_format=torch.preserve_format)
                         state['lr_scale'] = torch.ones_like(p.view(-1)[0], memory_format=torch.preserve_format)
-                        # avoid inf for initial steps
-                        state['EMA_transition'] = torch.ones_like(p.view(-1)[0], memory_format=torch.preserve_format)*group['lr'] 
+                        state['EMA_transition'] = torch.ones_like(p.view(-1)[0], memory_format=torch.preserve_format)*group['lr'] # avoid inf for initial steps
 
                     exp_avgs.append(state['exp_avg'])
                     exp_avg_sqs.append(state['exp_avg_sq'])
