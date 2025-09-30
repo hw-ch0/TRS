@@ -1,4 +1,4 @@
-# Pytorch implementation of DYNAS
+# Pytorch implementation of TRS
 This is the implementation of the paper "Scheduling Weight Transitions for Quantization-Aware Training".
 
 For detailed information, please checkout the project site [[website](https://cvlab.yonsei.ac.kr/projects/TRS/)] or the paper [[arXiv](https://arxiv.org/abs/2404.19248)].
