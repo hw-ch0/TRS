@@ -5,9 +5,6 @@ For detailed information, please checkout the project site [[website](https://cv
 
 
 
-
-
-
 ## Requirements
 This repository has been tested with the following libraries:
 * Python 3.8.8
